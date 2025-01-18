@@ -33,4 +33,27 @@ function write_xyz(file::IO, atoms::Vector{Atom})
         z = rpad(atom.z, 16, " ")
         println(file, index, " ", species, " ", x, " ", y, " ", z)
     end
+    println(file, "")
+end
+
+function write_pbc(file::IO, A::Array{Float64})
+    
+    box = rpad("Box [i, j, k]", 30, " ")
+    x = rpad("X [angstrom]", 16, " ")
+    y = rpad("Y [angstrom]", 16, " ")
+    z = rpad("Z [angstrom]", 16, " ")
+    println(file, box, " ", x, " ", y, " ", z)
+    
+    for i in [-1, 0, 1], j in [-1, 0, 1], k in [-1, 0, 1]
+        x, y, z = A * [i, j, k]
+        
+        i = rpad("$i", 3, " ")
+        j = rpad("$j", 3, " ")
+        k = rpad("$k", 24, " ")
+        x = rpad("$(round(x, digits=8))", 16, " ")
+        y = rpad("$(round(y, digits=8))", 16, " ")
+        z = rpad("$(round(z, digits=8))", 16, " ")
+        println(file, i, " ", j, " ", k, " ", x, " ", y, " ", z)
+    end
+    println(file, "")
 end
