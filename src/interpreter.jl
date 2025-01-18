@@ -50,42 +50,24 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
     cutoff::Float64, rotations::Int64, output_file::IO, save::SubString{String})
     
     write_section(output_file, "Energy landscape calculations")
-    A = compute_conversion_matrix(framework)
    
     # Compute the offset displacements needed for periodic boundary conditions
     write_subsection(output_file, "Periodic boundary conditions")
+    A = compute_conversion_matrix(framework)
+    write_pbc(output_file, A) 
     
-    box_string = rpad("Box [i, j, k]", 30, " ")
-    x_string = rpad("X [angstrom]", 16, " ")
-    y_string = rpad("Y [angstrom]", 16, " ")
-    z_string = rpad("Z [angstrom]", 16, " ")
-    
+    write_subsection(output_file, "PBC Framework")
     pbc_framework = generate_pbc(framework)
-    
-    write(output_file, "$box_string $x_string $y_string $z_string\n")
-    pbc_offsets = []
-    for i in [-1, 0, 1], j in [-1, 0, 1], k in [-1, 0, 1]
-        offset = A * [i, j, k]
-        push!(pbc_offsets, offset)
-        
-        i_string = rpad("$i", 3, " ")
-        j_string = rpad("$j", 3, " ")
-        k_string = rpad("$k", 24, " ")
-        x_string = rpad("$(round(offset[1], digits=8))", 16, " ")
-        y_string = rpad("$(round(offset[2], digits=8))", 16, " ")
-        z_string = rpad("$(round(offset[3], digits=8))", 16, " ")
-        write(output_file, "$i_string$j_string$k_string $x_string $y_string $z_string\n")
-    end
-    write(output_file, "\n")
+    write_xyz(output_file, pbc_framework.atoms)
     
     # Initialize arrays and assign parameters for probe
     sx = range(start=0, step=1/sizea, length=sizea) .+ 1/(sizea * 2)
     sy = range(start=0, step=1/sizeb, length=sizeb) .+ 1/(sizeb * 2)
-    sz = range(start=0, step=1/sizeb, length=sizec) .+ 1/(sizec * 2)
+    sz = range(start=0, step=1/sizec, length=sizec) .+ 1/(sizec * 2)
     potential = zeros(sizea, sizeb, sizec)
      
     # Main loop
-    total_stats = @timed for (index, _) in enumerate(1:1:rotations)
+    total_stats = @timed for (index, _) in enumerate(1:rotations)
         
         write_subsection(output_file, "Run $index")
        
@@ -115,7 +97,7 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
                 # Check if the probe center of mass falls within the atomic radius
                 # of a framework atom 
                 if cmr <= 0.5 * sig2 
-                    @inbounds potential[pos] = 1.0
+                    @inbounds potential[pos] = 1
                     @goto next_point
                 end
                 
@@ -136,11 +118,9 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
                     r = compute_distance(dx, dy, dz)
                     
                     # Check if distance is longer than cutoff
-                    if r >= cutoff
-                        continue
-                    elseif r < cutoff
-                        @inbounds potential[pos] += lennard_jones_energy(sig, eps, r) -
-                                                 lennard_jones_energy(sig, eps, cutoff)
+                    if r < cutoff
+                        @inbounds potential[pos] += lennard_jones_energy(sig, eps, r) - 
+                                                    lennard_jones_energy(sig, eps, cutoff)
                     end
                 end
             end
@@ -153,10 +133,10 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
         inaccessible_boxes = length(potential[potential .== 1])
         
         positive_boxes = length(potential[potential .> 0])
-        total_pos_pot = sum(potential[potential .> 0]) * NA * 1e-3 / index
+        total_pos_pot = sum(potential[potential .> 0]) * 1e-3 / index
 
-        negative_boxes = length(potential[potential .< 0])
-        total_neg_pot = sum(potential[potential .< 0]) * NA * 1e-3 / index
+        negative_boxes = length(potential[potential .<= 0])
+        total_neg_pot = sum(potential[potential .<= 0]) * 1e-3 / index
         
         write_result(output_file, "Total boxes evaluated [count]", total_boxes)
         write_result(output_file, "Inaccessible box ratio [-]", inaccessible_boxes/total_boxes)
@@ -180,10 +160,10 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
     inaccessible_boxes = length(potential[potential .== 1])
         
     positive_boxes = length(potential[potential .> 0])
-    total_pos_pot = sum(potential[potential .> 0]) * NA * 1e-3 / rotations
+    total_pos_pot = sum(potential[potential .> 0]) * 1e-3 / rotations
 
-    negative_boxes = length(potential[potential .< 0])
-    total_neg_pot = sum(potential[potential .< 0]) * NA * 1e-3 / rotations
+    negative_boxes = length(potential[potential .<= 0])
+    total_neg_pot = sum(potential[potential .<= 0]) * 1e-3 / rotations
     
     write_result(output_file, "Total boxes evaluated [count]", total_boxes)
     write_result(output_file, "Inaccessible box ratio [-]", inaccessible_boxes/total_boxes)
@@ -222,7 +202,7 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
     #     right_margin=12Plots.mm)
     #     savefig(p, "Output/potential_landscape.png")
     # end
-    return potential
+    return potential .* 1e-3 ./ rotations
 end
 
 
@@ -263,7 +243,7 @@ function compute_characteristic(atom_properties::Dict{SubString{String}, AtomPro
     sample_volume = framework_volume * 1e-24 / sizea / sizeb / sizec
     
     minimum_potential = minimum(potential)
-    potential_range = range(start=minimum_potential, stop=-1e-7, length=npoints)
+    potential_range = range(start=minimum_potential, stop=0, length=npoints)
     
     mkpath("Output")
     output_file = open("Output/characteristic.dat", "w+")

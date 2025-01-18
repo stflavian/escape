@@ -225,10 +225,10 @@ function generate_pbc(framework::Framework)
     
     A = compute_conversion_matrix(framework)
     i = 1
-    for ox in [0, -1, 1], oy in [0, -1, 1], oz in [0, -1, 1] 
+    for ox in [0.0, -1.0, 1.0], oy in [0.0, -1.0, 1.0], oz in [0.0, -1.0, 1.0] 
         for atom in framework.atoms
-            x, y, z = fractional_to_cartesian(A, atom.x + ox, atom.y + oy, atom.z + oz)
-            pbc_atoms[i] = Atom(atom.species, x, y, z)
+            or = fractional_to_cartesian(A, ox, oy, oz)
+            pbc_atoms[i] = Atom(atom.species, atom.x + or[1], atom.y + or[2], atom.z + or[3])
             i += 1
         end
     end
