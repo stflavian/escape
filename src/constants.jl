@@ -20,6 +20,11 @@ Avogadro Constant in dimensionless units
 const NA = 6.0221e23
 
 """
+Universal Gas Constant in J/(mol*K)
+"""
+const R = 8.3145
+
+"""
 Atomic Mass Constant in kg
 """
 const MC = 1.6605e-27
