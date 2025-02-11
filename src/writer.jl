@@ -1,4 +1,5 @@
-import Dates
+using Dates
+using SHA
 
 const ESCAPE_VERSION::String = "1.0.0a"
 const HEADER::String = """
@@ -13,22 +14,36 @@ const HEADER::String = """
     ██████████  ▄████████▀  ████████▀    ███    █▀   ▄████▀        ██████████ 
 """
 
-const DESCRIPTION::String = """
-A Julia code for computing Polanyi characteristic curves from adsorbent geometries.
-"""
-
+const DESCRIPTION::String = "A Julia code for computing Polanyi characteristic curves from adsorbent geometries."
 const AUTHORS::String = "F. Stavarache, J. M. Vicent-Luna, S. Calero, H. Tanaka"
 
-function write_header(file::IO)
+
+function compute_checksum(file::AbstractString)
+    if isfile(file)
+        return bytes2hex(sha1(read(file)))
+    else
+        return "File not found"
+    end
+end
+
+
+function write_header(file::IO, input_file::AbstractString, framework_file::AbstractString, 
+                      probe_file::AbstractString, ff_file::AbstractString)
     println(file, HEADER)
-    println(file, "ESCAPE ", ESCAPE_VERSION)
+    println(file, "ESCAPE ", ESCAPE_VERSION, "running on Julia ", VERSION)
     println(file, DESCRIPTION)
     println(file, "Authors: ", AUTHORS)
     println(file, "")
-    println(file, "Date: ", Dates.Date(Dates.now()))
-    println(file, "Time: ", Dates.Time(Dates.now()))
-    println(file, "Directory: ", pwd())
+    println(file, "Date and Time: ", now())
+    println(file, "Host: ", gethostname())
+    println(file, "Operating System: ", Sys.KERNEL)
+    println(file, "CPU Architecture: ", Sys.ARCH)
     println(file, "")
+    println(file, "Directory: ", pwd())
+    println(file, "Input File Checksum: ", compute_checksum(input_file))
+    println(file, "Framework Geometry Checksum: ", compute_checksum(framework_file))
+    println(file, "Probe Geometry Checksum: ", compute_checksum(probe_file))
+    println(file, "Force Field File Checksum: ", compute_checksum(ff_file))
 end
 
 function write_footer(file::IO)

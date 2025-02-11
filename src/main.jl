@@ -8,7 +8,8 @@ function main()
     framework = read_framework_file(input_data["FRAMEWORK"])
     properties = read_properties_file(input_data["PROPERTIES"])
     
-    write_header(output_file)
+    write_header(output_file, "config.in", input_data["FRAMEWORK"], input_data["PROBE"],
+    input_data["PROPERTIES"])
 
     message = rpad("---- Input data ", 81, "-")
     write(output_file, "$message\n")
