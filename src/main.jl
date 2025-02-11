@@ -1,5 +1,5 @@
 include("interpreter.jl")
-
+include("writer.jl")
 
 function main()
     output_file = open("escape.out", "w+")
@@ -7,6 +7,8 @@ function main()
     probe = read_probe_file(input_data["PROBE"])
     framework = read_framework_file(input_data["FRAMEWORK"])
     properties = read_properties_file(input_data["PROPERTIES"])
+    
+    write_header(output_file)
 
     message = rpad("---- Input data ", 81, "-")
     write(output_file, "$message\n")
@@ -183,6 +185,7 @@ function main()
     compute_characteristic(properties, framework, potential, sizex, sizey, sizez, 
     npoints, input_data["SAVE_CHARACTERISTIC"])
     
+    write_footer(output_file)
     close(output_file)
 end
 

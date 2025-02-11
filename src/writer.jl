@@ -1,11 +1,51 @@
+import Dates
+
+const ESCAPE_VERSION::String = "1.0.0a"
+const HEADER::String = """
+  
+     ▄████████    ▄████████  ▄████████    ▄████████    ▄███████▄    ▄████████ 
+    ███    ███   ███    ███ ███    ███   ███    ███   ███    ███   ███    ███ 
+    ███    █▀    ███    █▀  ███    █▀    ███    ███   ███    ███   ███    █▀  
+   ▄███▄▄▄       ███        ███          ███    ███   ███    ███  ▄███▄▄▄     
+  ▀▀███▀▀▀     ▀███████████ ███        ▀███████████ ▀█████████▀  ▀▀███▀▀▀     
+    ███    █▄           ███ ███    █▄    ███    ███   ███          ███    █▄  
+    ███    ███    ▄█    ███ ███    ███   ███    ███   ███          ███    ███ 
+    ██████████  ▄████████▀  ████████▀    ███    █▀   ▄████▀        ██████████ 
+"""
+
+const DESCRIPTION::String = """
+A Julia code for computing Polanyi characteristic curves from adsorbent geometries.
+"""
+
+const AUTHORS::String = "F. Stavarache, J. M. Vicent-Luna, S. Calero, H. Tanaka"
+
+function write_header(file::IO)
+    println(file, HEADER)
+    println(file, "ESCAPE ", ESCAPE_VERSION)
+    println(file, DESCRIPTION)
+    println(file, "Authors: ", AUTHORS)
+    println(file, "")
+    println(file, "Date: ", Dates.Date(Dates.now()))
+    println(file, "Time: ", Dates.Time(Dates.now()))
+    println(file, "Directory: ", pwd())
+    println(file, "")
+end
+
+function write_footer(file::IO)
+    println(file, "")
+    println(file, "Simulation is finished!")
+    println(file, "Date: ", Dates.Date(Dates.now()))
+    println(file, "Time: ", Dates.Time(Dates.now()))
+end
+
 function write_section(file::IO, title::String)
     message = rpad("==== $title ", 81, "=")
-    write(file, message)
+    println(file, message)
     println(file, "")
 end
 
 function write_subsection(file::IO, title::String)
-    message = rpad("---- $title ", 81, "=")
+    message = rpad("---- $title ", 81, "-")
     println(file, message)
     println(file, "")
 end
