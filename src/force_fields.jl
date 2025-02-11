@@ -18,6 +18,16 @@ function lennard_jones_energy(sigma::Float64, epsilon::Float64, distance::Float6
 end
 
 
+function lorentz_berthelot_sigma(sigma1::Float64, sigma2::Float64)
+    return (sigma1 + sigma2) * 0.5
+end
+
+
+function lorentz_berthelot_epsilon(epsilon1::Float64, epsilon2::Float64)
+    return sqrt(epsilon1 * epsilon2)
+end
+
+
 """
     coloumb_energy(charge::Real, distance::Real)
 
