@@ -108,14 +108,13 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
                     eps1 = atom_properties[probe_atom.species].epsilon
                     
                     # Lorentz-Berthelot mixing rules and charge product
-                    sig = (sig1 + sig2) * 0.5
-                    eps = sqrt(eps1 * eps2)
+                    sig = lorentz_berthelot_sigma(sig1, sig2)
+                    eps = lorentz_berthelot_epsilon(eps1, eps2)
 
                     # Compute distance between probe atom and framework atom
-                    dx = probe_atom.x + x - pbc_atom.x
-                    dy = probe_atom.y + y - pbc_atom.y
-                    dz = probe_atom.z + z - pbc_atom.z
-                    r = compute_distance(dx, dy, dz)
+                    r = compute_distance(probe_atom.x + x - pbc_atom.x,
+                                         probe_atom.y + y - pbc_atom.y,
+                                         probe_atom.z + z - pbc_atom.z)
                     
                     # Check if distance is longer than cutoff
                     if r < cutoff
@@ -180,28 +179,39 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
     write_result(output_file, "Memory allocated [bytes]", total_stats.bytes)
     println(output_file, " ")
     
-    # if save == "yes"
-    #     
-    #     mkpath("Output")
-    #     
-    #     num = sizea * sizeb * sizec
-    #     x = zeros(num)
-    #     y = zeros(num)
-    #     z = zeros(num)
-    #     pot = zeros(num)
-    #     for i in 1:1:sizea, j in 1:1:sizeb, k in 1:1:sizec
-    #         index = i + (j-1) * sizea + (k-1) * sizeb^2
-    #         x[index] = potential[i, j, 1, 1]
-    #         y[index] = potential[i, j, 1, 2]
-    #         z[index] = potential[i, j, 1, 3]
-    #         pot[index] = potential[i, j, 1, 4]
-    #     end
+    if save == "yes"
+        
+        mkpath("Output")
+        
+        num = sizea * sizeb
+        x = zeros(num)
+        y = zeros(num)
+        pot = zeros(num)
+        index = 1
+        for pos in eachindex(IndexCartesian(), potential)
+            
+            if pos[3] != 1
+                continue
+            end
 
-    #     p = scatter(x, y, marker_z=pot, markersize=2, camera=(0, -90),
-    #     showaxis=false, legend=false, colorbar=true, markerstrokewidth=0, 
-    #     right_margin=12Plots.mm)
-    #     savefig(p, "Output/potential_landscape.png")
-    # end
+            x[index], y[index], _ = fractional_to_cartesian(A, sx[pos[1]], sy[pos[2]], sz[pos[3]])
+            total_potential = potential[pos]
+            
+            if total_potential == 1
+                pot[index] = 1
+            elseif total_potential >= 0
+                pot[index] = 0
+            else
+                pot[index] = potential[pos] * 10^-3 / rotations
+            end
+            index += 1
+        end
+
+        p = scatter(x, y, marker_z=pot, markersize=2, camera=(0, -90), dpi=150,
+        showaxis=false, legend=false, colorbar=true, markerstrokewidth=0, tickfontsize=10,
+        right_margin=12Plots.mm, grid=false, aspect_ratio=:equal, c=:roma)
+        savefig(p, "Output/potential_landscape.pdf")
+    end
     return potential .* 1e-3 ./ rotations
 end
 
