@@ -1,2 +1,3 @@
-/examples/*/Output/
-/examples/*/escape.out
+examples/*/Output
+examples/*/escape.out
+examples/*/run.sh

@@ -14,7 +14,17 @@ particles' epsilon values.
 """
 function lennard_jones_energy(sigma::Float64, epsilon::Float64, distance::Float64)
     frac = sigma / distance    
-    return 4 * epsilon * KB * (frac^12 - frac^6)
+    return 4 * epsilon * R * (frac^12 - frac^6)
+end
+
+
+function lorentz_berthelot_sigma(sigma1::Float64, sigma2::Float64)
+    return (sigma1 + sigma2) * 0.5
+end
+
+
+function lorentz_berthelot_epsilon(epsilon1::Float64, epsilon2::Float64)
+    return sqrt(epsilon1 * epsilon2)
 end
 
 
