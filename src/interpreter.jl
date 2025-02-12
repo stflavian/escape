@@ -206,10 +206,13 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
             end
             index += 1
         end
+        
+        p = scatter(x[pot .< 0], y[pot .< 0], marker_z=pot[pot .< 0], markersize=0.8, markerstrokewidth=0, 
+                    showaxis=false, right_margin=12Plots.mm, legend=false,
+                    colorbar=true, c=:acton, clims=(-20, 0), grid=false, aspect_ratio=:equal)
+        scatter!(x[pot .== 0], y[pot .== 0], color="#255E11", markersize=0.8, markerstrokewidth=0, z_order=:back)
+        scatter!(x[pot .== 1], y[pot .== 1], color="#0D4C00", markersize=0.8, markerstrokewidth=0)
 
-        p = scatter(x, y, marker_z=pot, markersize=2, camera=(0, -90), dpi=150,
-        showaxis=false, legend=false, colorbar=true, markerstrokewidth=0, tickfontsize=10,
-        right_margin=12Plots.mm, grid=false, aspect_ratio=:equal, c=:roma)
         savefig(p, "Output/potential_landscape.pdf")
     end
     return potential .* 1e-3 ./ rotations
@@ -278,9 +281,12 @@ function compute_characteristic(atom_properties::Dict{SubString{String}, AtomPro
     close(output_file)
     
     if save == "yes"
-        characteristic_plot = plot(measured_potential, measured_volumes)
-        xlabel!(characteristic_plot, "Potential [kJ/mol]")
-        ylabel!(characteristic_plot, "Volume [ml/g]")
-        savefig(characteristic_plot, "Output/characteristic.png") 
+        characteristic_plot = scatter(measured_potential, measured_volumes, color="#0D4C00", 
+                                      markersize=3, legend=false, grid=false)
+        xlims!((0, maximum(measured_potential)))
+        ylims!((0, maximum(measured_volumes) * 1.1))
+        xlabel!("Potential [kJ/mol]")
+        ylabel!("Volume [ml/g]")
+        savefig(characteristic_plot, "Output/characteristic.pdf") 
     end
 end
