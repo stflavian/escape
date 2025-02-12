@@ -209,7 +209,7 @@ function compute_potential_landscape(atom_properties::Dict{SubString{String}, At
         
         p = scatter(x[pot .< 0], y[pot .< 0], marker_z=pot[pot .< 0], markersize=0.8, markerstrokewidth=0, 
                     showaxis=false, right_margin=12Plots.mm, legend=false,
-                    colorbar=true, c=:acton, clims=(-20, 0), grid=false, aspect_ratio=:equal)
+                    colorbar=true, c=:acton, clims=(-15, 0), grid=false, aspect_ratio=:equal)
         scatter!(x[pot .== 0], y[pot .== 0], color="#255E11", markersize=0.8, markerstrokewidth=0, z_order=:back)
         scatter!(x[pot .== 1], y[pot .== 1], color="#0D4C00", markersize=0.8, markerstrokewidth=0)
 
